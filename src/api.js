@@ -34,3 +34,11 @@ export const fetchMarketplaceItems = async () => {
 };
 
 export const fetchTopSellers = () => fetchApiList("topSellers");
+
+export const fetchExploreItems = (filter = "") => {
+  const endpoint = filter
+    ? `explore?filter=${encodeURIComponent(filter)}`
+    : "explore";
+
+  return fetchApiList(endpoint);
+};
