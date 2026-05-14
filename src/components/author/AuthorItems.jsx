@@ -1,33 +1,27 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { fetchMarketplaceItems } from "../../api";
 
 const AuthorItems = ({ authorId }) => {
   const [items, setItems] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
 
   React.useEffect(() => {
     async function fetchAuthorItems() {
       try {
-        const hotCollectionsResponse = await fetch(
-          "https://us-central1-nft-cloud-functions.cloudfunctions.net/hotCollections",
-        );
+        setLoading(true);
+        setError(null);
 
-        const newItemsResponse = await fetch(
-          "https://us-central1-nft-cloud-functions.cloudfunctions.net/newItems",
-        );
-
-        const hotCollections = await hotCollectionsResponse.json();
-        const newItems = await newItemsResponse.json();
-
-        const allItems = [...hotCollections, ...newItems];
-
-        const filteredItems = allItems.filter(
+        const marketplaceItems = await fetchMarketplaceItems();
+        const filteredItems = marketplaceItems.filter(
           (item) => item.authorId === Number(authorId),
         );
 
         setItems(filteredItems);
       } catch (error) {
         console.error("Error fetching author items:", error);
+        setError(error);
       } finally {
         setLoading(false);
       }
@@ -51,6 +45,20 @@ const AuthorItems = ({ authorId }) => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="de_tab_content">
+        <div className="tab-1">
+          <div className="row">
+            <div className="col-lg-12">
+              <p>Error loading author items.</p>
+            </div>
           </div>
         </div>
       </div>

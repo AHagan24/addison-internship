@@ -1,89 +1,73 @@
 import React from "react";
 import AuthorBanner from "../images/author_banner.jpg";
+import AuthorImage from "../images/author_thumbnail.jpg";
 import AuthorItems from "../components/author/AuthorItems";
 import { Link, useParams } from "react-router-dom";
+import { fetchTopSellers } from "../api";
 
-const authorData = {
-  83937449: {
-    name: "Franklin Greer",
-    username: "@greerrrr",
-    wallet: "0xA91F83937449ETH",
-    followers: 1132,
-  },
+const getFallbackFollowers = (authorId) => {
+  const numericAuthorId = Number(authorId) || 0;
+  return 100 + (numericAuthorId % 4901);
+};
 
-  55757699: {
-    name: "Sophia Blake",
-    username: "@sophiablake",
-    wallet: "0xB22C55757699NFT",
-    followers: 842,
-  },
+const getUsername = (author, authorId) => {
+  if (author?.username) {
+    return author.username;
+  }
 
-  31906377: {
-    name: "Marcus Lee",
-    username: "@marcuslee",
-    wallet: "0xC73D31906377WEB3",
-    followers: 1564,
-  },
+  if (author?.authorUsername) {
+    return author.authorUsername;
+  }
 
-  72378156: {
-    name: "Elena Rivers",
-    username: "@elenarivers",
-    wallet: "0xD91A72378156ART",
-    followers: 721,
-  },
+  if (author?.authorName) {
+    return `@${author.authorName.toLowerCase().replace(/\s+/g, "")}`;
+  }
 
-  18556210: {
-    name: "Tyler Woods",
-    username: "@tylerwoods",
-    wallet: "0xE54F18556210DAO",
-    followers: 932,
-  },
+  return `@author${authorId}`;
+};
 
-  92837465: {
-    name: "Sarah Parker",
-    username: "@sarahparker",
-    wallet: "0xF82B92837465NFT",
-    followers: 1288,
-  },
+const getProfileStat = (author, authorId) => {
+  if (author?.followers) {
+    return `${author.followers} followers`;
+  }
 
-  24702857: {
-    name: "Monica Lucas",
-    username: "@monicalucas",
-    wallet: "0xG44C24702857ETH",
-    followers: 573,
-  },
+  if (author?.volume) {
+    return `${author.volume} ETH volume`;
+  }
+
+  if (author?.value) {
+    return `${author.value} ETH volume`;
+  }
+
+  if (author?.price) {
+    return `${author.price} ETH volume`;
+  }
+
+  return `${getFallbackFollowers(authorId)} followers`;
 };
 
 const Author = () => {
   const { authorId } = useParams();
-  const profile = authorData[authorId];
 
   const [author, setAuthor] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
 
   React.useEffect(() => {
     async function fetchAuthor() {
       try {
-        const hotCollectionsResponse = await fetch(
-          "https://us-central1-nft-cloud-functions.cloudfunctions.net/hotCollections",
-        );
+        setLoading(true);
+        setError(null);
 
-        const newItemsResponse = await fetch(
-          "https://us-central1-nft-cloud-functions.cloudfunctions.net/newItems",
-        );
-
-        const hotCollections = await hotCollectionsResponse.json();
-        const newItems = await newItemsResponse.json();
-
-        const allItems = [...hotCollections, ...newItems];
-
-        const foundAuthor = allItems.find(
-          (item) => item.authorId === Number(authorId),
+        const topSellers = await fetchTopSellers();
+        const foundAuthor = topSellers.find(
+          (seller) => seller.authorId === Number(authorId),
         );
 
         setAuthor(foundAuthor);
       } catch (error) {
         console.error("Error fetching author:", error);
+        setError(error);
       } finally {
         setLoading(false);
       }
@@ -92,8 +76,19 @@ const Author = () => {
     fetchAuthor();
   }, [authorId]);
 
+  const profile = {
+    name: author?.authorName || author?.name || `Author #${authorId}`,
+    username: getUsername(author, authorId),
+    wallet: author?.wallet || `0x${authorId}NFT`,
+    stat: getProfileStat(author, authorId),
+  };
+
   if (loading) {
     return <div>Loading author...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading author.</div>;
   }
 
   if (!author) {
@@ -120,18 +115,18 @@ const Author = () => {
                 <div className="d_profile de-flex">
                   <div className="de-flex-col">
                     <div className="profile_avatar">
-                      <img src={author.authorImage} alt="" />
+                      <img src={author.authorImage || AuthorImage} alt="" />
 
                       <i className="fa fa-check"></i>
 
                       <div className="profile_name">
                         <h4>
-                          {profile?.name || `Author #${authorId}`}
+                          {profile.name}
                           <span className="profile_username">
-                            {profile?.username || `@author${authorId}`}
+                            {profile.username}
                           </span>
                           <span id="wallet" className="profile_wallet">
-                            {profile?.wallet || authorId}
+                            {profile.wallet}
                           </span>
                           <button id="btn_copy" title="Copy Text">
                             Copy
@@ -144,7 +139,7 @@ const Author = () => {
                   <div className="profile_follow de-flex">
                     <div className="de-flex-col">
                       <div className="profile_follower">
-                        {profile?.followers || 0} followers
+                        {profile.stat}
                       </div>
 
                       <Link to="#" className="btn-main">
