@@ -11,14 +11,21 @@ const ItemDetails = () => {
   React.useEffect(() => {
     async function fetchItemDetails() {
       try {
-        const response = await fetch(
+        const hotCollectionsResponse = await fetch(
           "https://us-central1-nft-cloud-functions.cloudfunctions.net/hotCollections",
         );
 
-        const data = await response.json();
+        const newItemsResponse = await fetch(
+          "https://us-central1-nft-cloud-functions.cloudfunctions.net/newItems",
+        );
 
-        const selectedItem = data.find(
-          (collection) => collection.nftId === Number(nftId),
+        const hotCollections = await hotCollectionsResponse.json();
+        const newItems = await newItemsResponse.json();
+
+        const allItems = [...hotCollections, ...newItems];
+
+        const selectedItem = allItems.find(
+          (item) => item.nftId === Number(nftId),
         );
 
         setItem(selectedItem);
@@ -45,12 +52,9 @@ const ItemDetails = () => {
 
                 <div className="col-md-6">
                   <div className="skeleton skeleton-detail-title"></div>
-
                   <div className="skeleton skeleton-detail-text"></div>
                   <div className="skeleton skeleton-detail-text short"></div>
-
                   <div className="skeleton skeleton-detail-author"></div>
-
                   <div className="skeleton skeleton-detail-price"></div>
                 </div>
               </div>
@@ -93,13 +97,13 @@ const ItemDetails = () => {
 
                     <div className="item_info_like">
                       <i className="fa fa-heart"></i>
-                      74
+                      {item.likes || 74}
                     </div>
                   </div>
 
                   <p>
-                    This NFT is part of the {item.title} collection. It has the
-                    collection code ERC-{item.code}.
+                    This NFT is part of the {item.title} collection. It is
+                    listed with NFT ID #{item.nftId}.
                   </p>
 
                   <div className="d-flex flex-row">
@@ -120,7 +124,7 @@ const ItemDetails = () => {
 
                         <div className="author_list_info">
                           <Link to={`/author/${item.authorId}`}>
-                            Author #{item.authorId}
+                            Owner #{item.authorId}
                           </Link>
                         </div>
                       </div>
@@ -157,7 +161,7 @@ const ItemDetails = () => {
 
                     <div className="nft-item-price">
                       <img src={EthImage} alt="" />
-                      <span>1.85</span>
+                      <span>{item.price || "1.85"} ETH</span>
                     </div>
                   </div>
                 </div>
