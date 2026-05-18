@@ -20,7 +20,7 @@ const Explore = () => {
           <div className="center-y relative text-center">
             <div className="container">
               <div className="row">
-                <div className="col-md-12 text-center">
+                <div className="col-md-12 text-center" data-aos="fade-up">
                   <h1>Explore</h1>
                 </div>
                 <div className="clearfix"></div>
@@ -29,7 +29,7 @@ const Explore = () => {
           </div>
         </section>
 
-        <section aria-label="section">
+        <section aria-label="section" data-aos="fade-up">
           <div className="container">
             <div className="row">
               <ExploreItems />

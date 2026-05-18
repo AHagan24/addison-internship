@@ -4,6 +4,13 @@ import AuthorImage from "../../images/author_thumbnail.jpg";
 import nftImage from "../../images/nftImage.jpg";
 import { fetchMarketplaceItems } from "../../api";
 
+const getOwnerId = (item) =>
+  item?.ownerId ||
+  item?.ownerAuthorId ||
+  item?.owner?.id ||
+  item?.owner?.authorId ||
+  item?.authorId;
+
 const AuthorItems = ({ authorId }) => {
   const params = useParams();
   const currentAuthorId = authorId || params.authorId;
@@ -24,7 +31,7 @@ const AuthorItems = ({ authorId }) => {
 
         const marketplaceItems = await fetchMarketplaceItems();
         const filteredItems = marketplaceItems.filter(
-          (item) => item?.authorId === Number(currentAuthorId),
+          (item) => Number(getOwnerId(item)) === Number(currentAuthorId),
         );
 
         setItems(filteredItems);
@@ -87,6 +94,8 @@ const AuthorItems = ({ authorId }) => {
               <div
                 className="col-lg-3 col-md-6 col-sm-6 col-xs-12"
                 key={nftId}
+                data-aos="fade-up"
+                data-aos-delay={index * 100}
               >
                 <div className="nft__item">
                   <div className="author_list_pp">
