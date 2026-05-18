@@ -110,12 +110,6 @@ const getExtraAuthorFields = (author) => {
   });
 };
 
-const formatFieldName = (fieldName) => {
-  return fieldName
-    .replace(/([A-Z])/g, " $1")
-    .replace(/^./, (letter) => letter.toUpperCase());
-};
-
 const Author = () => {
   const { authorId } = useParams();
 
